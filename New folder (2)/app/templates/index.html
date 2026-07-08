@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2b1a12">
+  <title>آمریکانو — بازی شانس</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+
+  <section id="login-page" class="login-page">
+    <form id="login-form" class="login-card" autocomplete="on">
+      <div class="login-mark brand-symbol" aria-hidden="true"><span>☕</span></div>
+      <p class="eyebrow">خوش برگشتی</p>
+      <h1>ورود به آمریکانو</h1>
+      <p class="muted">با حساب خودت وارد شو و از همان جایی که بودی ادامه بده.</p>
+
+      <label class="field">
+        <span>نام کاربری</span>
+        <input id="username" name="username" type="text" minlength="3" maxlength="32"
+               autocomplete="username" spellcheck="false" required autofocus>
+      </label>
+      <label class="field">
+        <span>رمز عبور</span>
+        <input id="password" name="password" type="password" maxlength="128"
+               autocomplete="current-password" required>
+      </label>
+      <div id="login-error" class="form-error" role="alert" aria-live="polite"></div>
+      <button id="btn-login" class="btn btn-primary btn-wide" type="submit">
+        <span>ورود امن</span><span aria-hidden="true">←</span>
+      </button>
+      <p class="security-note">🔒 اطلاعات ورود در کد یا صفحه نمایش داده نمی‌شود.</p>
+    </form>
+  </section>
+
+  <div id="app" class="app" hidden>
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo brand-symbol" aria-hidden="true"><span>☕</span></div>
+        <div>
+          <div class="title">آمریکانو</div>
+          <div class="subtitle">AMERICANO · بازی خطر و شانس</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span id="connection-status" class="connection online"><i></i> متصل</span>
+        <button id="btn-admin" class="btn btn-ghost" type="button" hidden>پنل مدیریت</button>
+      </div>
+    </header>
+
+    <main class="container">
+      <aside class="panel profile-panel">
+        <div class="profile">
+          <div class="avatar" id="avatar">پ</div>
+          <div>
+            <div id="profile-name" class="profile-name">خوش آمدید</div>
+            <div id="profile-sub" class="muted">اطلاعات حساب شما</div>
+          </div>
+        </div>
+
+        <div class="balance-card">
+          <span>موجودی قابل بازی</span>
+          <strong><b id="stat-balance">—</b> <small>اعتبار</small></strong>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat"><span>بردها</span><strong id="stat-wins">—</strong></div>
+          <div class="stat"><span>باخت‌ها</span><strong id="stat-losses">—</strong></div>
+          <div class="stat stat-wide"><span>بالاترین برد</span><strong id="stat-best">—</strong></div>
+        </div>
+
+        <div class="stake-box">
+          <label class="field">
+            <span>مبلغ شرط (اعتبار)</span>
+            <input id="stake-input" type="number" min="1" max="1000000000" step="1" value="100">
+          </label>
+          <div class="quick-stakes" aria-label="مبلغ‌های پیشنهادی">
+            <button type="button" data-stake="100">۱۰۰</button>
+            <button type="button" data-stake="500">۵۰۰</button>
+            <button type="button" data-stake="1000">۱٬۰۰۰</button>
+          </div>
+          <div class="controls">
+            <button id="btn-start" class="btn btn-primary grow" type="button">شروع بازی</button>
+            <button id="btn-logout" class="btn btn-ghost" type="button">خروج</button>
+          </div>
+          <a class="btn btn-support" href="https://t.me/Bussof" target="_blank" rel="noopener noreferrer">
+            <span aria-hidden="true">↗</span> پشتیبانی تلگرام
+          </a>
+          <div id="zero-message" class="inline-alert" hidden></div>
+        </div>
+
+        <details class="ledger-box">
+          <summary>گردش ۲۵ تراکنش اخیر</summary>
+          <div id="ledger-list" class="ledger-list"></div>
+        </details>
+      </aside>
+
+      <section class="game-card">
+        <div class="game-heading">
+          <div>
+            <p class="eyebrow">زمین بازی</p>
+            <h2>یک خانه‌ی امن پیدا کن</h2>
+            <p id="game-info" class="muted">۵ ردیف، هر ردیف ۴ خانه؛ بعد از هر خانه‌ی امن می‌توانی با سود برداشت کنی.</p>
+          </div>
+          <div class="round-stats">
+            <div class="stat"><span>ردیف</span><strong id="round-number">۰/۵</strong></div>
+            <div class="stat payout"><span>برد فعلی</span><strong><b id="current-payout">۰</b> اعتبار</strong></div>
+          </div>
+        </div>
+
+        <div class="multipliers" aria-label="ضرایب ردیف‌ها">
+          <span data-row="0">×۱٫۲۰</span><span data-row="1">×۱٫۶۰</span><span data-row="2">×۳٫۲۰</span>
+          <span data-row="3">×۶٫۴۰</span><span data-row="4">×۲۵٫۰۰</span>
+        </div>
+        <div id="board" class="board" aria-live="polite"></div>
+
+        <div class="game-footer">
+          <div id="round-message" class="round-message" role="status">برای شروع، مبلغ را وارد کن.</div>
+          <div class="footer-controls">
+            <button id="btn-withdraw" class="btn btn-success" type="button" disabled>برداشت</button>
+            <button id="btn-reveal-all" class="btn btn-ghost" type="button" disabled>نمایش صفحه</button>
+            <button id="btn-new-round" class="btn btn-ghost" type="button">دور تازه</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="admin-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="admin-title" hidden>
+    <div class="modal-backdrop" data-close-admin></div>
+    <section class="modal-box">
+      <header class="modal-header">
+        <div>
+          <p class="eyebrow">دسترسی مدیر</p>
+          <h2 id="admin-title">مدیریت کاربران</h2>
+        </div>
+        <button id="admin-close" class="icon-btn" type="button" aria-label="بستن">×</button>
+      </header>
+
+      <div class="admin-layout">
+        <div>
+          <div class="admin-toolbar">
+            <input id="admin-search" type="search" placeholder="جست‌وجوی کاربر…" aria-label="جست‌وجوی کاربر">
+            <button id="admin-new" class="btn btn-primary" type="button">کاربر جدید</button>
+          </div>
+          <div id="user-list" class="user-list"></div>
+        </div>
+
+        <form id="admin-form" class="editor-panel">
+          <div class="editor-title">
+            <strong id="editor-heading">کاربر جدید</strong>
+            <span id="editor-badge" class="badge">جدید</span>
+          </div>
+          <label class="field"><span>نام کاربری</span><input id="admin-username" type="text" maxlength="32" required></label>
+          <label class="field"><span>رمز عبور <small id="password-hint">(حداقل ۸ نویسه)</small></span><input id="admin-password" type="password" maxlength="128" autocomplete="new-password"></label>
+          <div class="form-grid">
+            <label class="field"><span>موجودی</span><input id="admin-balance" type="number" min="0" required></label>
+            <label class="field"><span>درجه سختی</span><input id="admin-difficulty" type="number" min="1" max="6" required></label>
+            <label class="field"><span>بردها</span><input id="admin-wins" type="number" min="0" required></label>
+            <label class="field"><span>باخت‌ها</span><input id="admin-losses" type="number" min="0" required></label>
+            <label class="field form-grid-wide"><span>بالاترین برد</span><input id="admin-best" type="number" min="0" required></label>
+          </div>
+          <label class="toggle"><input id="admin-enabled" type="checkbox" checked><span></span> حساب فعال باشد</label>
+          <div id="admin-error" class="form-error" role="alert"></div>
+          <div class="editor-actions">
+            <button id="admin-save" class="btn btn-primary grow" type="submit">ذخیره</button>
+            <button id="admin-delete" class="btn btn-danger" type="button" hidden>حذف</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <div id="confirm-modal" class="modal confirm-modal" role="dialog" aria-modal="true" hidden>
+    <div class="modal-backdrop"></div>
+    <section class="confirm-box">
+      <div class="confirm-icon">!</div>
+      <h3 id="confirm-title">مطمئن هستید؟</h3>
+      <p id="confirm-message" class="muted"></p>
+      <div class="confirm-actions">
+        <button id="confirm-cancel" class="btn btn-ghost" type="button">انصراف</button>
+        <button id="confirm-ok" class="btn btn-danger" type="button">تأیید</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
